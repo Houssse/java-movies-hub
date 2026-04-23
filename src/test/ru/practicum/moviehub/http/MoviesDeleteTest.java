@@ -62,4 +62,20 @@ public class MoviesDeleteTest {
         assertEquals(204, response.statusCode());
         assertEquals("[]", server.store.getAll());
     }
+
+    @Test
+    void deleteMovieById_withNonExistingId_returnsNotFound() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/1"))
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        String expecting = "{\"error\":\"Фильм не найден\",\"details\":[\"Фильм с id 1 не существует\"]}";
+        String actual = response.body();
+
+        assertEquals(404, response.statusCode());
+        assertEquals(expecting, actual);
+    }
 }
