@@ -80,8 +80,30 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
 
+        String expecting = "{\"error\":\"Ошибка валидации\",\"details\":[\"название не должно быть пустым\"]}";
+        String actual = resp.body();
+
         assertEquals(422, resp.statusCode(), "Ожидался код ошибки 422");
-        assertEquals("{\"error\":\"Ошибка валидации\",\"details\":[\"название не должно быть пустым\"]}"
-                , resp.body());
+        assertEquals(expecting, actual);
+    }
+
+    @Test
+    void postMovie_withTooLongTitle_returnsBadRequest() throws  Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString( "{\"title\": \""
+                        + "a".repeat(101) + "\", \"year\": 2010}"))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        String expecting = "{\"error\":\"Ошибка валидации\",\"details\":" +
+                "[\"название не должно быть больше 100 символов\"]}";
+        String actual = resp.body();
+
+        assertEquals(422, resp.statusCode());
+        assertEquals(expecting, actual);
     }
 }
