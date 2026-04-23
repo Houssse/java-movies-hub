@@ -136,4 +136,20 @@ public class MoviesGetTest {
         assertEquals(404, resp.statusCode());
         assertEquals(expected, actual);
     }
+
+    @Test
+    void getMoviesByYear_withExistingYear_returnsFilteredList() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies?year=2010"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        String expected = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
+        String actual = resp.body().trim();
+
+        assertEquals(200, resp.statusCode());
+        assertEquals(expected, actual);
+    }
 }
