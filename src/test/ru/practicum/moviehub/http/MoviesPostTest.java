@@ -106,4 +106,33 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
         assertEquals(422, resp.statusCode());
         assertEquals(expecting, actual);
     }
+
+    @Test
+    void postMovie_withInvalidYear_returnsBadRequest() throws  Exception {
+        HttpRequest req1 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \"Inception\", \"year\": 2123}"))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+
+        HttpRequest req2 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \"Inception\", \"year\": 1881}"))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+
+        HttpResponse<String> resp1 = client.send(req1, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> resp2 = client.send(req2, HttpResponse.BodyHandlers.ofString());
+
+        String expecting = "{\"error\":\"Ошибка валидации\",\"details\":[\"год должен быть между 1888 и 2026\"]}";
+        String actual1 = resp1.body();
+        String actual2 = resp2.body();
+        
+        assertEquals(422, resp1.statusCode());
+        assertEquals(expecting, actual1, "Ожидалась ошибка года");
+        assertEquals(422, resp2.statusCode());
+        assertEquals(expecting, actual2, "Ожидалась ошибка года");
+    }
 }
