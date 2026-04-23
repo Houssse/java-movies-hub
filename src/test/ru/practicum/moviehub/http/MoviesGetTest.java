@@ -121,4 +121,19 @@ public class MoviesGetTest {
         assertEquals(404, resp.statusCode());
         assertEquals(expected, actual);
     }
+
+    @Test
+    void getMovieById_withNonNumericId_returnsBadRequest() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/blabla"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        String expected = "{\"error\":\"Некорректный id\",\"details\":[\"id должен быть числом\"]}";
+        String actual = resp.body().trim();
+        assertEquals(404, resp.statusCode());
+        assertEquals(expected, actual);
+    }
 }
