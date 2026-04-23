@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,7 +22,7 @@ public class MoviesGetTest {
     private static HttpClient client;
 
     @BeforeAll
-    static void beforeAll() {
+    static void beforeAll() throws IOException, InterruptedException {
         server = new MoviesServer();
         server.start();
 
@@ -29,12 +30,14 @@ public class MoviesGetTest {
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();
 
-        HttpRequest.newBuilder()
+         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .headers("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \"Inception\", \"year\": 2010}"))
                 .timeout(Duration.ofSeconds(2))
                 .build();
+
+        client.send(req, HttpResponse.BodyHandlers.ofString());
     }
 
     @BeforeEach
@@ -80,7 +83,7 @@ public class MoviesGetTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
-        String expected = "[{\"title\": \"Inception\", \"year\": 2010}]";
+        String expected = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
         String actual = resp.body().trim();
 
         assertEquals(expected , actual, "Должен вернуть массив с фильмом");

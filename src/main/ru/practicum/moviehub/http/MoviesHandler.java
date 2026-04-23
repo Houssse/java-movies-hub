@@ -22,7 +22,13 @@ public class MoviesHandler extends BaseHttpHandler {
     public void handle(HttpExchange ex) throws IOException {
         String method = ex.getRequestMethod();
         if (method.equalsIgnoreCase("GET")) {
-            sendJson(ex, 200, "[]");
+            try {
+                sendJson(ex, 200, store.getAll());
+            } catch (Exception e) {
+
+            } finally {
+                ex.close();
+            }
         } else if (method.equalsIgnoreCase("POST")) {
             try {
                 String contentType = ex.getRequestHeaders().getFirst("Content-Type");
