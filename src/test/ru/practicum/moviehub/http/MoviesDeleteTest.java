@@ -78,4 +78,21 @@ public class MoviesDeleteTest {
         assertEquals(404, response.statusCode());
         assertEquals(expecting, actual);
     }
+
+    @Test
+    void deleteMovieById_withNonNumericId_returnsBadRequest() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/blablas"))
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        String expecting = "{\"error\":\"Некорректный id\",\"details\":[\"id должен быть числом\"]}";
+        String actual = response.body();
+
+        assertEquals(400, response.statusCode());
+        assertEquals(expecting, actual);
+
+    }
 }
