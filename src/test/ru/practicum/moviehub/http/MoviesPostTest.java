@@ -149,4 +149,18 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
 
         assertEquals(415, resp.statusCode());
     }
+
+    @Test
+    void postMovie_withMalformedJson_returnsBadRequest() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+            .uri(URI.create(BASE + "/movies"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString("это не json"))
+            .timeout(Duration.ofSeconds(2))
+            .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(400, resp.statusCode());
+    }
 }
