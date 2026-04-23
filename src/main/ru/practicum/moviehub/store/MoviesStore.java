@@ -23,9 +23,13 @@ public class MoviesStore {
         return gson.toJson(new ArrayList<>(movies.values()));
     }
 
-    public void clear() {
+    public void clearAll() {
         movies.clear();
         nextId = 1;
+    }
+
+    public void delete(int id) {
+        movies.remove(id);
     }
 
     public Movie getById(int id) {

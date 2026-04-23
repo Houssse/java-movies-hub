@@ -25,6 +25,7 @@ public class MoviesHandler extends BaseHttpHandler {
             switch (method) {
                 case "GET" -> handleGet(ex);
                 case "POST" -> handlePost(ex);
+                case "DELETE" -> handleDelete(ex);
                 default -> sendError(ex, 405, "Метод не поддерживается", List.of());
             }
         } finally {
@@ -90,6 +91,28 @@ public class MoviesHandler extends BaseHttpHandler {
 
         store.add(movie);
         sendJson(ex, 201, gson.toJson(movie));
+    }
+
+    private void handleDelete(HttpExchange ex) throws IOException {
+        String path = ex.getRequestURI().getPath();
+        String[] parts = path.split("/");
+
+        if (parts.length == 3) {
+            try {
+                int id = Integer.parseInt(parts[2]);
+                Movie movie = store.getById(id);
+
+                if (movie == null) {
+                    sendError(ex, 404, "Фильм не найден", List.of("Фильм с id " + id
+                            + " не существует"));
+                } else {
+                    store.delete(id);
+                    sendNoContent(ex);
+                }
+            } catch (NumberFormatException e) {
+                sendError(ex, 400, "Некорректный id", List.of("id должен быть числом"));
+            }
+        }
     }
 
     private boolean validate(Movie movie, HttpExchange ex) throws IOException {

@@ -31,7 +31,7 @@ public class MoviesPostTest {
 
     @BeforeEach
     void beforeEach() throws InterruptedException {
-        server.store.clear();
+        server.store.clearAll();
     }
 
     @AfterAll
