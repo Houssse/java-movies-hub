@@ -68,4 +68,24 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
 
         assertEquals(expecting, actual, "Ожидалось сохранение фильма");
     }
+
+    @Test
+    void postMovie_withEmptyTitle_returnsBadRequest() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("[]"))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(resp.statusCode(), 422, "Ожидался код ошибки 422");
+
+        String actual = resp.body();
+        String expecting = "{Ошибка валидации, [Название не должно быть пустым]}";
+
+        assertEquals(expecting, actual, "Ожидалось ошибка и информация о ней");
+
+    }
 }
