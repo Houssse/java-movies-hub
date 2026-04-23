@@ -20,43 +20,45 @@ public class MoviesHandler extends BaseHttpHandler {
 
     @Override
     public void handle(HttpExchange ex) throws IOException {
-        String method = ex.getRequestMethod();
-        if (method.equalsIgnoreCase("GET")) {
-            try {
-                sendJson(ex, 200, store.getAll());
-            } catch (Exception e) {
-
-            } finally {
-                ex.close();
+        try {
+            String method = ex.getRequestMethod();
+            switch (method) {
+                case "GET" -> handleGet(ex);
+                case "POST" -> handlePost(ex);
+                default -> sendError(ex, 405, "Метод не поддерживается", List.of());
             }
-        } else if (method.equalsIgnoreCase("POST")) {
-            try {
-                String contentType = ex.getRequestHeaders().getFirst("Content-Type");
-                if (contentType == null || !contentType.contains("application/json")) {
-                    sendError(ex, 415, "Неправильный Content-Type",
-                            List.of("Ожидается application/json"));
-                    return;
-                }
-
-                Movie movie;
-                try {
-                    String body = new String(ex.getRequestBody().readAllBytes());
-                    movie = gson.fromJson(body, Movie.class);
-                } catch (Exception e) {
-                    sendError(ex, 400, "Некорректный JSON", List.of(e.getMessage()));
-                    return;
-                }
-
-                if (!validate(movie, ex)) {
-                    return;
-                }
-
-                store.add(movie);
-                sendJson(ex, 201, gson.toJson(movie));
-            } finally {
-                ex.close();
-            }
+        } finally {
+            ex.close();
         }
+    }
+
+    private void handleGet(HttpExchange ex) throws IOException {
+        sendJson(ex, 200, store.getAll());
+    }
+
+    private void handlePost(HttpExchange ex) throws IOException {
+        String contentType = ex.getRequestHeaders().getFirst("Content-Type");
+        if (contentType == null || !contentType.contains("application/json")) {
+            sendError(ex, 415, "Неправильный Content-Type",
+                    List.of("Ожидается application/json"));
+            return;
+        }
+
+        Movie movie;
+        try {
+            String body = new String(ex.getRequestBody().readAllBytes());
+            movie = gson.fromJson(body, Movie.class);
+        } catch (Exception e) {
+            sendError(ex, 400, "Некорректный JSON", List.of(e.getMessage()));
+            return;
+        }
+
+        if (!validate(movie, ex)) {
+            return;
+        }
+
+        store.add(movie);
+        sendJson(ex, 201, gson.toJson(movie));
     }
 
     private boolean validate(Movie movie, HttpExchange ex) throws IOException {
