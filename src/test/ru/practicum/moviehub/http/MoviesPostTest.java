@@ -129,10 +129,24 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
         String expecting = "{\"error\":\"Ошибка валидации\",\"details\":[\"год должен быть между 1888 и 2026\"]}";
         String actual1 = resp1.body();
         String actual2 = resp2.body();
-        
+
         assertEquals(422, resp1.statusCode());
         assertEquals(expecting, actual1, "Ожидалась ошибка года");
         assertEquals(422, resp2.statusCode());
         assertEquals(expecting, actual2, "Ожидалась ошибка года");
+    }
+
+    @Test
+    void postMovie_withWrongContentType_returnsUnsupportedMediaType() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+            .uri(URI.create(BASE + "/movies"))
+            .header("Content-Type", "text/plain")   // не application/json
+            .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE))
+            .timeout(Duration.ofSeconds(2))
+            .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(415, resp.statusCode());
     }
 }
