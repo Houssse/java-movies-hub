@@ -152,4 +152,20 @@ public class MoviesGetTest {
         assertEquals(200, resp.statusCode());
         assertEquals(expected, actual);
     }
+
+    @Test
+    void getMoviesByYear_withNonNumericYear_returnsBadRequest() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies?year=blabla"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        String expected = "{\"error\":\"Некорректный year\",\"details\":[\"year должен быть числом\"]}";
+        String actual = resp.body().trim();
+
+        assertEquals(400, resp.statusCode());
+        assertEquals(expected, actual);
+    }
 }
