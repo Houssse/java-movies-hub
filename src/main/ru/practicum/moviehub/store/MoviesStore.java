@@ -26,4 +26,8 @@ public class MoviesStore {
         nextId = 1;
     }
 
+    public Movie getById(int id) {
+        return movies.get(id);
+    }
+
 }

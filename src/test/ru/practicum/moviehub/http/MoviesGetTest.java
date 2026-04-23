@@ -93,13 +93,13 @@ public class MoviesGetTest {
     @Test
     void getMovieById_withExistingId_returnsMovie() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies{1}"))
+                .uri(URI.create(BASE + "/movies/1"))
                 .GET()
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
-        String expected = TEST_MOVIE + "{\"id\":1}";
+        String expected = "{\"title\":\"Inception\",\"year\":2010,\"id\":1}";
         String actual = resp.body().trim();
 
         assertEquals(200, resp.statusCode());

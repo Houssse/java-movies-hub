@@ -33,7 +33,25 @@ public class MoviesHandler extends BaseHttpHandler {
     }
 
     private void handleGet(HttpExchange ex) throws IOException {
-        sendJson(ex, 200, store.getAll());
+        String path = ex.getRequestURI().getPath();
+        String[] parts = path.split("/");
+
+        if (parts.length == 2) {
+            sendJson(ex, 200, store.getAll());
+        } else if (parts.length == 3) {
+            try {
+                int id = Integer.parseInt(parts[2]);
+                Movie movie = store.getById(id);
+                if (movie == null) {
+                    sendError(ex, 404, "Фильм не найден", List.of("Фильм с id " + id
+                            + " не существует"));
+                } else {
+                    sendJson(ex, 200, gson.toJson(movie));
+                }
+            } catch (NumberFormatException e) {
+                sendError(ex, 404, "Некорректный id", List.of("id должен быть числом"));
+            }
+        }
     }
 
     private void handlePost(HttpExchange ex) throws IOException {
