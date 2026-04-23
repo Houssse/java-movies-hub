@@ -28,9 +28,16 @@ public class MoviesHandler extends BaseHttpHandler{
             try {
                 String body = new String(ex.getRequestBody().readAllBytes());
                 Movie movie = gson.fromJson(body, Movie.class);
+                String contentType = ex.getRequestHeaders().getFirst("Content-Type");
+
                 if(!validate(movie, ex)) {
                     return;
+                } else if (contentType == null || !contentType.contains("application/json")) {
+                    sendError(ex, 415, "Неправильный Content-Type",
+                            List.of("Ожидается application/json"));
+                    return;
                 }
+
 
                 store.add(movie);
 
