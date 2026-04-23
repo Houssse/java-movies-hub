@@ -17,6 +17,12 @@ public class MoviesHandler extends BaseHttpHandler{
             try (OutputStream os = ex.getResponseBody()){
                 os.write(bytes);
             }
+        } else if (method.equalsIgnoreCase("POST")) {
+            byte[] bytes = "[]".getBytes(StandardCharsets.UTF_8);
+            sendJson(ex, 201, "[]");
+            try (OutputStream os = ex.getResponseBody()) {
+                os.write(bytes);
+            }
         }
     }
 }
