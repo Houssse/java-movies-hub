@@ -73,19 +73,15 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
     void postMovie_withEmptyTitle_returnsBadRequest() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
-                .headers("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("[]"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \"\", \"year\": 2010}"))
                 .timeout(Duration.ofSeconds(2))
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(resp.statusCode(), 422, "Ожидался код ошибки 422");
-
-        String actual = resp.body();
-        String expecting = "{Ошибка валидации, [Название не должно быть пустым]}";
-
-        assertEquals(expecting, actual, "Ожидалось ошибка и информация о ней");
-
+        assertEquals(422, resp.statusCode(), "Ожидался код ошибки 422");
+        assertEquals("{\"error\":\"Ошибка валидации\",\"details\":[\"название не должно быть пустым\"]}"
+                , resp.body());
     }
 }
