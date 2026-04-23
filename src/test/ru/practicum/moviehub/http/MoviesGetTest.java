@@ -28,6 +28,13 @@ public class MoviesGetTest {
         client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();
+
+        HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \"Inception\", \"year\": 2010}"))
+                .timeout(Duration.ofSeconds(2))
+                .build();
     }
 
     @BeforeEach
@@ -62,5 +69,20 @@ public class MoviesGetTest {
         String body = resp.body().trim();
         assertTrue(body.startsWith("[") && body.endsWith("]"),
                 "Ожидается JSON-массив");
+    }
+
+    @Test
+    void getMovies_whenMoviesExist_returnsArray() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        String expected = "[{\"title\": \"Inception\", \"year\": 2010}]";
+        String actual = resp.body().trim();
+
+        assertEquals(expected , actual, "Должен вернуть массив с фильмом");
     }
 }
