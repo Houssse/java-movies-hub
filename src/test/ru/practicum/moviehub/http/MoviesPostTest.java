@@ -3,7 +3,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.practicum.moviehub.store.MoviesStore;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -30,7 +29,7 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
 
     @BeforeEach
     void beforeEach() {
-
+        server.store.clear();
     }
 
     @AfterAll
@@ -64,8 +63,9 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
 
         client.send(req, HttpResponse.BodyHandlers.ofString());
 
-        String expecting = MoviesStore.getAll;
+        String expecting = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
+        String actual = server.store.getAll();
 
-        assertEquals(expecting, TEST_MOVIE, "Ожидалось сохранение фильма");
+        assertEquals(expecting, actual, "Ожидалось сохранение фильма");
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.moviehub.http;
 
 import com.sun.net.httpserver.HttpServer;
+import ru.practicum.moviehub.store.MoviesStore;
 
 import javax.imageio.IIOException;
 import java.io.IOException;
@@ -8,11 +9,12 @@ import java.net.InetSocketAddress;
 
 public class MoviesServer {
     private final HttpServer server;
+    MoviesStore store = new MoviesStore();
 
     public MoviesServer() {
         try {
             server = HttpServer.create(new InetSocketAddress(8080), 0);
-            server.createContext("/movies", new MoviesHandler());
+            server.createContext("/movies", new MoviesHandler(store));
         } catch (IIOException e) {
             throw new RuntimeException("Не удалось создать HTPP-сервер", e);
         } catch (IOException e) {
