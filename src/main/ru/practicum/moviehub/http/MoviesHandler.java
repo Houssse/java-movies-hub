@@ -23,43 +23,48 @@ public class MoviesHandler extends BaseHttpHandler{
         String method = ex.getRequestMethod();
         if (method.equalsIgnoreCase("GET")) {
             sendJson(ex, 200, "[]");
-
         } else if (method.equalsIgnoreCase("POST")) {
             try {
-                String body = new String(ex.getRequestBody().readAllBytes());
-                Movie movie = gson.fromJson(body, Movie.class);
                 String contentType = ex.getRequestHeaders().getFirst("Content-Type");
-
-                if(!validate(movie, ex)) {
-                    return;
-                } else if (contentType == null || !contentType.contains("application/json")) {
+                if (contentType == null || !contentType.contains("application/json")) {
                     sendError(ex, 415, "Неправильный Content-Type",
                             List.of("Ожидается application/json"));
                     return;
                 }
 
+                Movie movie;
+                try {
+                    String body = new String(ex.getRequestBody().readAllBytes());
+                    movie = gson.fromJson(body, Movie.class);
+                } catch (Exception e) {
+                    sendError(ex, 400, "Некорректный JSON", List.of(e.getMessage()));
+                    return;
+                }
+
+                if (!validate(movie, ex)) {
+                    return;
+                }
 
                 store.add(movie);
-
                 sendJson(ex, 201, gson.toJson(movie));
-            } catch (IOException e) {
-                sendJson(ex, 500, "{\"error\": \"" + e.getMessage() + "\"}");
             } finally {
                 ex.close();
             }
-
         }
     }
 
     private boolean validate(Movie movie, HttpExchange ex) throws IOException {
-         List<String> errors = new ArrayList<>();
-         if (movie.getTitle() == null || movie.getTitle().isEmpty()) {
-             errors.add("название не должно быть пустым");
-         }  else if(movie.getTitle().length() > 100) {
-             errors.add("название не должно быть больше 100 символов");
-         } else if(movie.getYear() < 1888 || movie.getYear() > 2026) {
-             errors.add("год должен быть между 1888 и 2026");
-         }
+        List<String> errors = new ArrayList<>();
+
+        if (movie.getTitle() == null || movie.getTitle().isEmpty()) {
+            errors.add("название не должно быть пустым");
+        }
+        if (movie.getTitle() != null && movie.getTitle().length() > 100) {
+            errors.add("название не должно быть больше 100 символов");
+        }
+        if (movie.getYear() < 1888 || movie.getYear() > 2026) {
+            errors.add("год должен быть между 1888 и 2026");
+        }
 
         if (!errors.isEmpty()) {
             sendError(ex, 422, "Ошибка валидации", errors);
