@@ -3,6 +3,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.practicum.moviehub.store.MoviesStore;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -54,6 +55,17 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
 
     @Test
     void postMovie_addsMovieToStorage() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE))
+                .timeout(Duration.ofSeconds(2))
+                .build();
 
+        client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        String expecting = MoviesStore.getAll;
+
+        assertEquals(expecting, TEST_MOVIE, "Ожидалось сохранение фильма");
     }
 }
