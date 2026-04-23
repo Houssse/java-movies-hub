@@ -28,7 +28,7 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
     }
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws InterruptedException {
         server.store.clear();
     }
 

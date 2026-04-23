@@ -25,15 +25,22 @@ public class MoviesHandler extends BaseHttpHandler{
             sendJson(ex, 200, "[]");
 
         } else if (method.equalsIgnoreCase("POST")) {
-            String body = new String(ex.getRequestBody().readAllBytes());
-            Movie movie = gson.fromJson(body, Movie.class);
-            if(!validate(movie, ex)) {
-                return;
+            try {
+                String body = new String(ex.getRequestBody().readAllBytes());
+                Movie movie = gson.fromJson(body, Movie.class);
+                if(!validate(movie, ex)) {
+                    return;
+                }
+
+                store.add(movie);
+
+                sendJson(ex, 201, gson.toJson(movie));
+            } catch (IOException e) {
+                sendJson(ex, 500, "{\"error\": \"" + e.getMessage() + "\"}");
+            } finally {
+                ex.close();
             }
 
-            store.add(movie);
-
-            sendJson(ex, 201, gson.toJson(movie));
         }
     }
 
@@ -42,7 +49,9 @@ public class MoviesHandler extends BaseHttpHandler{
 
          if (movie.getTitle() == null || movie.getTitle().isEmpty()) {
             errors.add("название не должно быть пустым");
-        }
+        } else if(movie.getTitle().length() > 100) {
+             errors.add("название не должно быть больше 100 символов");
+         }
 
         if (!errors.isEmpty()) {
             sendError(ex, 422, "Ошибка валидации", errors);
