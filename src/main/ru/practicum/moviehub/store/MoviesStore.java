@@ -20,6 +20,7 @@ public class MoviesStore {
     public String getAll() {
         return gson.toJson(new ArrayList<>(movies.values()));
     }
+
     public void clear() {
         movies.clear();
         nextId = 1;

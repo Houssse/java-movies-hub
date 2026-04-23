@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoviesHandler extends BaseHttpHandler{
+public class MoviesHandler extends BaseHttpHandler {
     private final MoviesStore store;
     private final Gson gson = new Gson();
 

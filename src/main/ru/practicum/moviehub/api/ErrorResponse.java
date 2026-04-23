@@ -11,6 +11,11 @@ public class ErrorResponse {
         this.details = details;
     }
 
-    public String getError() { return error; }
-    public List<String> getDetails() { return details; }
+    public String getError() {
+        return error;
+    }
+
+    public List<String> getDetails() {
+        return details;
+    }
 }

@@ -1,4 +1,5 @@
 package ru.practicum.moviehub.http;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,8 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MoviesPostTest {    private static final String BASE = "http://localhost:8080";
+public class MoviesPostTest {
+    private static final String BASE = "http://localhost:8080";
     private static final String TEST_MOVIE = "{\"title\": \"Inception\", \"year\": 2010}";
     private static MoviesServer server;
     private static HttpClient client;
@@ -38,7 +40,7 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
     }
 
     @Test
-    void  postMovie_withValidMovie_returnsCreatedStatus() throws Exception {
+    void postMovie_withValidMovie_returnsCreatedStatus() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .headers("Content-Type", "application/json")
@@ -88,11 +90,11 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
     }
 
     @Test
-    void postMovie_withTooLongTitle_returnsBadRequest() throws  Exception {
+    void postMovie_withTooLongTitle_returnsBadRequest() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString( "{\"title\": \""
+                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \""
                         + "a".repeat(101) + "\", \"year\": 2010}"))
                 .timeout(Duration.ofSeconds(2))
                 .build();
@@ -108,7 +110,7 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
     }
 
     @Test
-    void postMovie_withInvalidYear_returnsBadRequest() throws  Exception {
+    void postMovie_withInvalidYear_returnsBadRequest() throws Exception {
         HttpRequest req1 = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .headers("Content-Type", "application/json")
@@ -139,11 +141,11 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
     @Test
     void postMovie_withWrongContentType_returnsUnsupportedMediaType() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
-            .uri(URI.create(BASE + "/movies"))
-            .header("Content-Type", "text/plain")   // не application/json
-            .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE))
-            .timeout(Duration.ofSeconds(2))
-            .build();
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", "text/plain")   // не application/json
+                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE))
+                .timeout(Duration.ofSeconds(2))
+                .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
 
@@ -153,11 +155,11 @@ public class MoviesPostTest {    private static final String BASE = "http://loca
     @Test
     void postMovie_withMalformedJson_returnsBadRequest() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
-            .uri(URI.create(BASE + "/movies"))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString("это не json"))
-            .timeout(Duration.ofSeconds(2))
-            .build();
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("это не json"))
+                .timeout(Duration.ofSeconds(2))
+                .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
 

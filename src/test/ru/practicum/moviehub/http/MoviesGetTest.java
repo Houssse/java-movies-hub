@@ -15,7 +15,8 @@ import java.time.Duration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MoviesGetTest {    private static final String BASE = "http://localhost:8080";
+public class MoviesGetTest {
+    private static final String BASE = "http://localhost:8080";
     private static MoviesServer server;
     private static HttpClient client;
 
