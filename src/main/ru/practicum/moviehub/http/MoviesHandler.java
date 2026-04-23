@@ -46,11 +46,12 @@ public class MoviesHandler extends BaseHttpHandler{
 
     private boolean validate(Movie movie, HttpExchange ex) throws IOException {
          List<String> errors = new ArrayList<>();
-
          if (movie.getTitle() == null || movie.getTitle().isEmpty()) {
-            errors.add("название не должно быть пустым");
-        } else if(movie.getTitle().length() > 100) {
+             errors.add("название не должно быть пустым");
+         }  else if(movie.getTitle().length() > 100) {
              errors.add("название не должно быть больше 100 символов");
+         } else if(movie.getYear() < 1888 || movie.getYear() > 2026) {
+             errors.add("год должен быть между 1888 и 2026");
          }
 
         if (!errors.isEmpty()) {
