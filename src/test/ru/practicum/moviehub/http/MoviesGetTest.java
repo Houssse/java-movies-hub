@@ -20,6 +20,7 @@ public class MoviesGetTest {
     private static final String BASE = "http://localhost:8080";
     private static MoviesServer server;
     private static HttpClient client;
+    private static final String TEST_MOVIE = "{\"title\":\"Inception\",\"year\":2010}";
 
     @BeforeAll
     static void beforeAll() throws IOException, InterruptedException {
@@ -30,10 +31,10 @@ public class MoviesGetTest {
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();
 
-         HttpRequest req = HttpRequest.newBuilder()
+        HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .headers("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \"Inception\", \"year\": 2010}"))
+                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE, StandardCharsets.UTF_8))
                 .timeout(Duration.ofSeconds(2))
                 .build();
 
@@ -86,6 +87,23 @@ public class MoviesGetTest {
         String expected = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
         String actual = resp.body().trim();
 
-        assertEquals(expected , actual, "Должен вернуть массив с фильмом");
+        assertEquals(expected, actual, "Должен вернуть массив с фильмом");
+    }
+
+    @Test
+    void getMovieById_withExistingId_returnsMovie() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies{1}"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        String expected = TEST_MOVIE + "{\"id\":1}";
+        String actual = resp.body().trim();
+
+        assertEquals(200, resp.statusCode());
+        assertEquals(expected, actual);
+
     }
 }
