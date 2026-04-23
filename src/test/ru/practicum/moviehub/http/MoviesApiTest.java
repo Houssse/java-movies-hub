@@ -63,4 +63,21 @@ public class MoviesApiTest {
         assertTrue(body.startsWith("[") && body.endsWith("]"),
                 "Ожидается JSON-массив");
     }
+
+    @Test
+    void  postMovie_withValidMovie_returnsCreatedStatus() throws Exception {
+        String jsonBody = "{\"title\": \"Inception\", \"year\": 2010}";
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(201, resp.statusCode(), "Должен вернуть 201");
+
+    }
 }
