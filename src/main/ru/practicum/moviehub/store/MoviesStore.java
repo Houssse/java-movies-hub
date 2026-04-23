@@ -5,7 +5,9 @@ import ru.practicum.moviehub.model.Movie;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MoviesStore {
     private final Map<Integer, Movie> movies = new HashMap<>();
@@ -28,6 +30,12 @@ public class MoviesStore {
 
     public Movie getById(int id) {
         return movies.get(id);
+    }
+
+    public List<Movie> getByYear(int year) {
+        return movies.values().stream()
+                .filter(m -> m.getYear() == year)
+                .collect(Collectors.toList());
     }
 
 }

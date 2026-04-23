@@ -37,7 +37,17 @@ public class MoviesHandler extends BaseHttpHandler {
         String[] parts = path.split("/");
 
         if (parts.length == 2) {
-            sendJson(ex, 200, store.getAll());
+            String query = ex.getRequestURI().getQuery();
+            if (query != null && query.startsWith("year=")) {
+                try {
+                    int year = Integer.parseInt(query.split("=")[1]);
+                    sendJson(ex, 200, gson.toJson(store.getByYear(year)));
+                } catch (NumberFormatException e) {
+                    sendError(ex, 400, "Некорректный year", List.of("year должен быть числом"));
+                }
+            } else {
+                sendJson(ex, 200, store.getAll());
+            }
         } else if (parts.length == 3) {
             try {
                 int id = Integer.parseInt(parts[2]);
@@ -49,8 +59,11 @@ public class MoviesHandler extends BaseHttpHandler {
                     sendJson(ex, 200, gson.toJson(movie));
                 }
             } catch (NumberFormatException e) {
-                sendError(ex, 404, "Некорректный id", List.of("id должен быть числом"));
+                sendError(ex, 400, "Некорректный id", List.of("id должен быть числом"));
             }
+        } else {
+            sendError(ex, 400, "Некорректный путь", List.of("Ожидается /movies," +
+                    " /movies/{id} или /movies?year=YYYY"));
         }
     }
 

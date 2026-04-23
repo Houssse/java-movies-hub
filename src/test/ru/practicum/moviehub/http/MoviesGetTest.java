@@ -133,7 +133,7 @@ public class MoviesGetTest {
 
         String expected = "{\"error\":\"Некорректный id\",\"details\":[\"id должен быть числом\"]}";
         String actual = resp.body().trim();
-        assertEquals(404, resp.statusCode());
+        assertEquals(400, resp.statusCode());
         assertEquals(expected, actual);
     }
 
