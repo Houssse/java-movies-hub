@@ -106,4 +106,19 @@ public class MoviesGetTest {
         assertEquals(expected, actual);
 
     }
+
+    @Test
+    void getMovieById_withNonExistingId_returnsNotFound() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/4"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        String expected = "{\"error\":\"Фильм не найден\",\"details\":[\"Фильм с id 4 не существует\"]}";
+        String actual = resp.body().trim();
+        assertEquals(404, resp.statusCode());
+        assertEquals(expected, actual);
+    }
 }
