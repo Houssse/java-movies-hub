@@ -7,6 +7,7 @@ import ru.practicum.moviehub.model.Movie;
 import ru.practicum.moviehub.store.MoviesStore;
 
 import java.io.IOException;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,6 +118,7 @@ public class MoviesHandler extends BaseHttpHandler {
 
     private boolean validate(Movie movie, HttpExchange ex) throws IOException {
         List<String> errors = new ArrayList<>();
+        int currentYear = Year.now().getValue();
 
         if (movie.getTitle() == null || movie.getTitle().isEmpty()) {
             errors.add("название не должно быть пустым");
@@ -124,7 +126,7 @@ public class MoviesHandler extends BaseHttpHandler {
         if (movie.getTitle() != null && movie.getTitle().length() > 100) {
             errors.add("название не должно быть больше 100 символов");
         }
-        if (movie.getYear() < 1888 || movie.getYear() > 2026) {
+        if (movie.getYear() < 1888 || movie.getYear() > currentYear + 1) {
             errors.add("год должен быть между 1888 и 2026");
         }
 
