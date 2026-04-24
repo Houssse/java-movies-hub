@@ -165,4 +165,19 @@ public class MoviesPostTest {
 
         assertEquals(400, resp.statusCode());
     }
+
+    @Test
+    void unsupportedMethod_returnsMethodNotAllowed() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .method("PATCH", HttpRequest.BodyPublishers.noBody())
+                .timeout(Duration.ofSeconds(2))
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(405, resp.statusCode());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
+    }
 }
