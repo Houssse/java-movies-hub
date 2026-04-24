@@ -48,7 +48,7 @@ public class MoviesHandler extends BaseHttpHandler {
                     sendError(ex, 400, "Некорректный year", List.of("year должен быть числом"));
                 }
             } else {
-                sendJson(ex, 200, store.getAll());
+                sendJson(ex, 200, gson.toJson(store.getAll()));
             }
         } else if (parts.length == 3) {
             try {

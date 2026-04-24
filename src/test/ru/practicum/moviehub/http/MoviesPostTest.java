@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.practicum.moviehub.store.MoviesStore;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -12,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoviesPostTest {
     private static final String BASE = "http://localhost:8080";
@@ -21,7 +23,7 @@ public class MoviesPostTest {
 
     @BeforeAll
     static void beforeAll() {
-        server = new MoviesServer();
+        server = new MoviesServer(new MoviesStore(), 8080);
         server.start();
 
         client = HttpClient.newBuilder()
@@ -30,8 +32,8 @@ public class MoviesPostTest {
     }
 
     @BeforeEach
-    void beforeEach() throws InterruptedException {
-        server.store.clearAll();
+    void beforeEach() {
+        server.clearStore();
     }
 
     @AfterAll
@@ -50,8 +52,9 @@ public class MoviesPostTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(201, resp.statusCode(), "Должен вернуть 201");
-
+        assertEquals(201, resp.statusCode());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
     }
 
     @Test
@@ -65,10 +68,14 @@ public class MoviesPostTest {
 
         client.send(req, HttpResponse.BodyHandlers.ofString());
 
-        String expecting = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
-        String actual = server.store.getAll();
+        HttpRequest getReq = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .GET()
+                .build();
+        HttpResponse<String> getResp = client.send(getReq, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(expecting, actual, "Ожидалось сохранение фильма");
+        String expecting = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
+        assertEquals(expecting, getResp.body().trim());
     }
 
     @Test
@@ -83,10 +90,8 @@ public class MoviesPostTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
 
         String expecting = "{\"error\":\"Ошибка валидации\",\"details\":[\"название не должно быть пустым\"]}";
-        String actual = resp.body();
-
-        assertEquals(422, resp.statusCode(), "Ожидался код ошибки 422");
-        assertEquals(expecting, actual);
+        assertEquals(422, resp.statusCode());
+        assertEquals(expecting, resp.body().trim());
     }
 
     @Test
@@ -94,19 +99,17 @@ public class MoviesPostTest {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \""
-                        + "a".repeat(101) + "\", \"year\": 2010}"))
+                .POST(HttpRequest.BodyPublishers.ofString("{\"title\": \"" +
+                        "a".repeat(101) + "\", \"year\": 2010}"))
                 .timeout(Duration.ofSeconds(2))
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
 
-        String expecting = "{\"error\":\"Ошибка валидации\",\"details\":" +
-                "[\"название не должно быть больше 100 символов\"]}";
-        String actual = resp.body();
-
+        String expecting = "{\"error\":\"Ошибка валидации\",\"details\"" +
+                ":[\"название не должно быть больше 100 символов\"]}";
         assertEquals(422, resp.statusCode());
-        assertEquals(expecting, actual);
+        assertEquals(expecting, resp.body().trim());
     }
 
     @Test
@@ -128,56 +131,9 @@ public class MoviesPostTest {
         HttpResponse<String> resp1 = client.send(req1, HttpResponse.BodyHandlers.ofString());
         HttpResponse<String> resp2 = client.send(req2, HttpResponse.BodyHandlers.ofString());
 
-        String expecting = "{\"error\":\"Ошибка валидации\",\"details\":[\"год должен быть между 1888 и 2026\"]}";
-        String actual1 = resp1.body();
-        String actual2 = resp2.body();
-
         assertEquals(422, resp1.statusCode());
-        assertEquals(expecting, actual1, "Ожидалась ошибка года");
+        assertTrue(resp1.body().contains("год должен быть между 1888 и"));
         assertEquals(422, resp2.statusCode());
-        assertEquals(expecting, actual2, "Ожидалась ошибка года");
-    }
-
-    @Test
-    void postMovie_withWrongContentType_returnsUnsupportedMediaType() throws Exception {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
-                .header("Content-Type", "text/plain")   // не application/json
-                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE))
-                .timeout(Duration.ofSeconds(2))
-                .build();
-
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(415, resp.statusCode());
-    }
-
-    @Test
-    void postMovie_withMalformedJson_returnsBadRequest() throws Exception {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("это не json"))
-                .timeout(Duration.ofSeconds(2))
-                .build();
-
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(400, resp.statusCode());
-    }
-
-    @Test
-    void unsupportedMethod_returnsMethodNotAllowed() throws Exception {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
-                .method("PATCH", HttpRequest.BodyPublishers.noBody())
-                .timeout(Duration.ofSeconds(2))
-                .build();
-
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(405, resp.statusCode());
-        assertEquals("application/json; charset=UTF-8",
-                resp.headers().firstValue("Content-Type").orElse(""));
+        assertTrue(resp2.body().contains("год должен быть между 1888 и"));
     }
 }

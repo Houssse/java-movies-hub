@@ -1,6 +1,5 @@
 package ru.practicum.moviehub.store;
 
-import com.google.gson.Gson;
 import ru.practicum.moviehub.model.Movie;
 
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import java.util.stream.Collectors;
 
 public class MoviesStore {
     private final Map<Integer, Movie> movies = new HashMap<>();
-    private final Gson gson = new Gson();
     private int nextId = 1;
 
     public void add(Movie movie) {
@@ -19,8 +17,8 @@ public class MoviesStore {
         movies.put(movie.getId(), movie);
     }
 
-    public String getAll() {
-        return gson.toJson(new ArrayList<>(movies.values()));
+    public List<Movie> getAll() {
+        return new ArrayList<>(movies.values());
     }
 
     public void clearAll() {
@@ -41,5 +39,4 @@ public class MoviesStore {
                 .filter(m -> m.getYear() == year)
                 .collect(Collectors.toList());
     }
-
 }

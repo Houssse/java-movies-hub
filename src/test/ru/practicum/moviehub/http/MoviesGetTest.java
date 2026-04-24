@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.practicum.moviehub.store.MoviesStore;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoviesGetTest {
     private static final String BASE = "http://localhost:8080";
@@ -24,26 +24,16 @@ public class MoviesGetTest {
 
     @BeforeAll
     static void beforeAll() throws IOException, InterruptedException {
-        server = new MoviesServer();
+        server = new MoviesServer(new MoviesStore(), 8080);
         server.start();
-
         client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();
-
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
-                .headers("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE, StandardCharsets.UTF_8))
-                .timeout(Duration.ofSeconds(2))
-                .build();
-
-        client.send(req, HttpResponse.BodyHandlers.ofString());
     }
 
     @BeforeEach
     void beforeEach() {
-
+        server.clearStore();
     }
 
     @AfterAll
@@ -53,30 +43,29 @@ public class MoviesGetTest {
 
     @Test
     void getMovies_whenEmpty_returnsEmptyArray() throws Exception {
-
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .GET()
                 .build();
 
-        HttpResponse<String> resp =
-                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
-
-        assertEquals(200, resp.statusCode(), "GET /movies должен вернуть 200");
-
-        String contentTypeHeaderValue =
-                resp.headers().firstValue("Content-Type").orElse("");
-        assertEquals("application/json; charset=UTF-8", contentTypeHeaderValue,
-                "Content-Type должен содержать формат данных и кодировку");
-
-        String body = resp.body().trim();
-        assertTrue(body.startsWith("[") && body.endsWith("]"),
-                "Ожидается JSON-массив");
+        assertEquals(200, resp.statusCode());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
+        assertEquals("[]", resp.body().trim());
     }
 
     @Test
     void getMovies_whenMoviesExist_returnsArray() throws Exception {
+        HttpRequest postReq = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE, StandardCharsets.UTF_8))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+        client.send(postReq, HttpResponse.BodyHandlers.ofString());
+
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .GET()
@@ -85,13 +74,21 @@ public class MoviesGetTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
         String expected = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
-        String actual = resp.body().trim();
-
-        assertEquals(expected, actual, "Должен вернуть массив с фильмом");
+        assertEquals(expected, resp.body().trim());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
     }
 
     @Test
     void getMovieById_withExistingId_returnsMovie() throws Exception {
+        HttpRequest postReq = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE, StandardCharsets.UTF_8))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+        client.send(postReq, HttpResponse.BodyHandlers.ofString());
+
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies/1"))
                 .GET()
@@ -100,11 +97,10 @@ public class MoviesGetTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
         String expected = "{\"title\":\"Inception\",\"year\":2010,\"id\":1}";
-        String actual = resp.body().trim();
-
         assertEquals(200, resp.statusCode());
-        assertEquals(expected, actual);
-
+        assertEquals(expected, resp.body().trim());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
     }
 
     @Test
@@ -117,9 +113,8 @@ public class MoviesGetTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
         String expected = "{\"error\":\"Фильм не найден\",\"details\":[\"Фильм с id 4 не существует\"]}";
-        String actual = resp.body().trim();
         assertEquals(404, resp.statusCode());
-        assertEquals(expected, actual);
+        assertEquals(expected, resp.body().trim());
     }
 
     @Test
@@ -132,13 +127,21 @@ public class MoviesGetTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
         String expected = "{\"error\":\"Некорректный id\",\"details\":[\"id должен быть числом\"]}";
-        String actual = resp.body().trim();
         assertEquals(400, resp.statusCode());
-        assertEquals(expected, actual);
+        assertEquals(expected, resp.body().trim());
     }
 
     @Test
     void getMoviesByYear_withExistingYear_returnsFilteredList() throws Exception {
+        // Добавляем фильм
+        HttpRequest postReq = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .headers("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE, StandardCharsets.UTF_8))
+                .timeout(Duration.ofSeconds(2))
+                .build();
+        client.send(postReq, HttpResponse.BodyHandlers.ofString());
+
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies?year=2010"))
                 .GET()
@@ -147,26 +150,10 @@ public class MoviesGetTest {
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
         String expected = "[{\"title\":\"Inception\",\"year\":2010,\"id\":1}]";
-        String actual = resp.body().trim();
-
         assertEquals(200, resp.statusCode());
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void getMoviesByYear_withNonNumericYear_returnsBadRequest() throws Exception {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies?year=blabla"))
-                .GET()
-                .build();
-
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-
-        String expected = "{\"error\":\"Некорректный year\",\"details\":[\"year должен быть числом\"]}";
-        String actual = resp.body().trim();
-
-        assertEquals(400, resp.statusCode());
-        assertEquals(expected, actual);
+        assertEquals(expected, resp.body().trim());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
     }
 
     @Test
@@ -182,5 +169,19 @@ public class MoviesGetTest {
         assertEquals("application/json; charset=UTF-8",
                 resp.headers().firstValue("Content-Type").orElse(""));
         assertEquals("[]", resp.body().trim());
+    }
+
+    @Test
+    void getMoviesByYear_withNonNumericYear_returnsBadRequest() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies?year=blabla"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        String expected = "{\"error\":\"Некорректный year\",\"details\":[\"year должен быть числом\"]}";
+        assertEquals(400, resp.statusCode());
+        assertEquals(expected, resp.body().trim());
     }
 }

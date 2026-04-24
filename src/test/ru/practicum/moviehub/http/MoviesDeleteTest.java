@@ -4,8 +4,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.practicum.moviehub.store.MoviesStore;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,10 +22,9 @@ public class MoviesDeleteTest {
     private static final String TEST_MOVIE = "{\"title\":\"Inception\",\"year\":2010}";
 
     @BeforeAll
-    static void beforeAll() throws IOException, InterruptedException {
-        server = new MoviesServer();
+    static void beforeAll() {
+        server = new MoviesServer(new MoviesStore(), 8080);
         server.start();
-
         client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();
@@ -33,7 +32,7 @@ public class MoviesDeleteTest {
 
     @BeforeEach
     void beforeEach() {
-
+        server.clearStore();
     }
 
     @AfterAll
@@ -43,13 +42,13 @@ public class MoviesDeleteTest {
 
     @Test
     void deleteMovieById_withExistingId_returnsNoContent() throws Exception {
+        // Добавляем фильм
         HttpRequest reqCreate = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .headers("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(TEST_MOVIE, StandardCharsets.UTF_8))
                 .timeout(Duration.ofSeconds(2))
                 .build();
-
         client.send(reqCreate, HttpResponse.BodyHandlers.ofString());
 
         HttpRequest req = HttpRequest.newBuilder()
@@ -60,7 +59,14 @@ public class MoviesDeleteTest {
         HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(204, response.statusCode());
-        assertEquals("[]", server.store.getAll());
+
+        // Проверяем через HTTP, что список пуст
+        HttpRequest getReq = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .GET()
+                .build();
+        HttpResponse<String> getResp = client.send(getReq, HttpResponse.BodyHandlers.ofString());
+        assertEquals("[]", getResp.body().trim());
     }
 
     @Test
@@ -73,10 +79,8 @@ public class MoviesDeleteTest {
         HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
 
         String expecting = "{\"error\":\"Фильм не найден\",\"details\":[\"Фильм с id 1 не существует\"]}";
-        String actual = response.body();
-
         assertEquals(404, response.statusCode());
-        assertEquals(expecting, actual);
+        assertEquals(expecting, response.body().trim());
     }
 
     @Test
@@ -89,10 +93,22 @@ public class MoviesDeleteTest {
         HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
 
         String expecting = "{\"error\":\"Некорректный id\",\"details\":[\"id должен быть числом\"]}";
-        String actual = response.body();
-
         assertEquals(400, response.statusCode());
-        assertEquals(expecting, actual);
+        assertEquals(expecting, response.body().trim());
+    }
 
+    @Test
+    void unsupportedMethod_returnsMethodNotAllowed() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .method("PATCH", HttpRequest.BodyPublishers.noBody())
+                .timeout(Duration.ofSeconds(2))
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(405, resp.statusCode());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
     }
 }
