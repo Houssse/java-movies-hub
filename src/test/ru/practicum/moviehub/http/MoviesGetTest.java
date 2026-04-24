@@ -168,4 +168,19 @@ public class MoviesGetTest {
         assertEquals(400, resp.statusCode());
         assertEquals(expected, actual);
     }
+
+    @Test
+    void getMoviesByYear_whenNoMoviesForYear_returnsEmptyArray() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies?year=1999"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(200, resp.statusCode());
+        assertEquals("application/json; charset=UTF-8",
+                resp.headers().firstValue("Content-Type").orElse(""));
+        assertEquals("[]", resp.body().trim());
+    }
 }
