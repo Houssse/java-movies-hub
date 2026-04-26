@@ -29,6 +29,11 @@ public class MoviesHandler extends BaseHttpHandler {
                 case "DELETE" -> handleDelete(ex);
                 default -> sendError(ex, 405, "Метод не поддерживается", List.of());
             }
+        } catch (Exception e) {
+            try {
+                sendError(ex, 500, "Internal Server Error", List.of());
+            } catch (IOException ignored) {
+            }
         } finally {
             ex.close();
         }
