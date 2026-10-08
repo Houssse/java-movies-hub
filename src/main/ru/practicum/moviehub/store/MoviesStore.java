@@ -25,6 +25,10 @@ public class MoviesStore {
         return Optional.ofNullable(movies.get(id));
     }
 
+    public void deleteMovie(int id) {
+        movies.remove(id);
+    }
+
     public void clear() {
         movies.clear();
         nextId = 1;

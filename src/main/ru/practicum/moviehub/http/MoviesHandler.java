@@ -37,6 +37,9 @@ public class MoviesHandler extends BaseHttpHandler {
                 case "POST":
                     post(ex);
                     break;
+                case "DELETE":
+                    delete(ex);
+                    break;
                 default:
                     sendNoContent(204, ex);
             }
@@ -61,12 +64,11 @@ public class MoviesHandler extends BaseHttpHandler {
                 String json = new Gson().toJson(movie.get());
                 sendJson(ex, 200, json);
             }
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             sendJson(ex, 400, "Некорректный ID");
         }
     }
-
-
+    
     private void post(HttpExchange ex) throws IOException {
         if (MovieValidator.isValidateHandle(ex)) {
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
@@ -81,6 +83,24 @@ public class MoviesHandler extends BaseHttpHandler {
             }
         } else {
             sendNoContent(415, ex);
+        }
+    }
+
+    private void delete(HttpExchange ex) throws IOException {
+        try {
+            String path = ex.getRequestURI().getPath();
+            String[] parts = path.split("/");
+            String id = parts[2];
+            Optional<Movie> movie = store.getMovie(Integer.parseInt(id));
+
+            if (movie.isEmpty()) {
+                sendNoContent(404, ex);
+            } else {
+                store.deleteMovie(Integer.parseInt(id));
+                sendNoContent(204, ex);
+            }
+        } catch (NumberFormatException e) {
+            sendJson(ex, 400, "Некорректный ID");
         }
     }
 }
