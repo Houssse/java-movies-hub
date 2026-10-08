@@ -68,7 +68,7 @@ public class MoviesHandler extends BaseHttpHandler {
             sendJson(ex, 400, "Некорректный ID");
         }
     }
-    
+
     private void post(HttpExchange ex) throws IOException {
         if (MovieValidator.isValidateHandle(ex)) {
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
