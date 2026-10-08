@@ -19,8 +19,8 @@ public abstract class BaseHttpHandler implements HttpHandler {
         }
     }
 
-    protected void sendNoContent(HttpExchange ex) throws java.io.IOException {
+    protected void sendNoContent(int status, HttpExchange ex) throws java.io.IOException {
         ex.getResponseHeaders().set("Content-Type", CT_JSON);
-        ex.sendResponseHeaders(204, -1);
+        ex.sendResponseHeaders(status, -1);
     }
 }

@@ -10,13 +10,18 @@ public class MoviesStore {
     private final Map<Integer, Movie> movies = new HashMap<>();
     private int nextId = 1;
 
-    public Movie addMovie(Movie movie) {
+    public String addMovie(Movie movie) {
         movie.setId(nextId++);
         movies.put(movie.getId(), movie);
-        return movie;
+        return new Gson().toJson(movie);
     }
 
     public String getAll() {
         return new Gson().toJson(movies.values());
+    }
+
+    public void clear() {
+        movies.clear();
+        nextId = 1;
     }
 }
