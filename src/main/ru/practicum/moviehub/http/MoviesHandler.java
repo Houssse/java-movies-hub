@@ -48,7 +48,6 @@ public class MoviesHandler extends BaseHttpHandler {
     }
 
     private void get(HttpExchange ex) throws IOException {
-        String method = ex.getRequestMethod();
         sendJson(ex, 200, store.getAll());
     }
 
