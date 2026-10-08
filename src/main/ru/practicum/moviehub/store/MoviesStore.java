@@ -5,6 +5,7 @@ import ru.practicum.moviehub.model.Movie;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class MoviesStore {
     private final Map<Integer, Movie> movies = new HashMap<>();
@@ -18,6 +19,10 @@ public class MoviesStore {
 
     public String getAll() {
         return new Gson().toJson(movies.values());
+    }
+
+    public Optional<Movie> getMovie(int id) {
+        return Optional.ofNullable(movies.get(id));
     }
 
     public void clear() {

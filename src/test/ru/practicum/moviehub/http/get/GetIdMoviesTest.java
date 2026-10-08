@@ -52,7 +52,7 @@ public class GetIdMoviesTest {
         HttpResponse<String> resp = getIdMovies(id);
 
         assertEquals(200, resp.statusCode(), "GET /movies/{id} должен вернуть 200");
-        assertEquals("", resp.body());
+        assertEquals("{\"id\":1,\"title\":\"movies\",\"year\":1924}", resp.body());
     }
 
     @Test
