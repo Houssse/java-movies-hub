@@ -71,7 +71,7 @@ public class DeleteMoviesTest {
                 .DELETE()
                 .build();
 
-        HttpResponse<String> response = client .send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(400, response.statusCode(), "Должен вернуть 400");
         assertEquals("Некорректный ID", response.body(), "Ожидалось Некорректный ID");

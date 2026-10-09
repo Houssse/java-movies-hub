@@ -18,12 +18,12 @@ public class MoviesServer {
         }
     }
 
-    public void start(){
+    public void start() {
         server.start();
         System.out.println("Сервер запущен");
     }
 
-    public void stop(){
+    public void stop() {
         server.stop(0);
         System.out.println("Сервер остановлен");
     }

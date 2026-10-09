@@ -80,6 +80,5 @@ public class GetMoviesTest {
         String body = resp.body().trim();
         assertEquals("[{\"id\":1,\"title\":\"Inception\",\"year\":2010}]", body,
                 "Ожидается JSON-массив c фильмом");
-
     }
 }

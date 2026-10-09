@@ -51,5 +51,4 @@ public class MovieValidator {
 
         return gson.toJson(errorResponse);
     }
-
 }

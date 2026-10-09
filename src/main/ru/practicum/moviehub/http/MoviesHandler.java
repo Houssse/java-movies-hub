@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
-import ru.practicum.moviehub.api.ErrorResponse;
 import ru.practicum.moviehub.api.MovieValidator;
 import ru.practicum.moviehub.model.Movie;
 import ru.practicum.moviehub.store.MoviesStore;
@@ -50,7 +49,7 @@ public class MoviesHandler extends BaseHttpHandler {
                     delete(ex);
                     break;
                 default:
-                    sendNoContent(204, ex);
+                    sendNoContent(405, ex);
             }
         } catch (
                 Exception e) {

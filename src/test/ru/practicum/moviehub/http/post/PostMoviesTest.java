@@ -74,7 +74,7 @@ public class PostMoviesTest {
 
         assertEquals(422, resp.statusCode(), "Должен вернуть 422");
         assertEquals("{\"error\":\"Ошибка валидации\"," +
-                        "\"details\":[\"год должен быть между 1888 и "+ validYear + "\"]}", resp.body(),
+                        "\"details\":[\"год должен быть между 1888 и " + validYear + "\"]}", resp.body(),
                 "Должен вернуть {\"error\":\"Ошибка валидации\"," +
                         "\"details\":[\"год должен быть между 1888 и " + validYear + "\"]}");
     }
@@ -102,9 +102,9 @@ public class PostMoviesTest {
 
         assertEquals(422, resp.statusCode(), "Должен вернуть 422");
         assertEquals("{\"error\":\"Ошибка валидации\"," +
-                        "\"details\":[\"год должен быть между 1888 и "+ validYear + "\"]}", resp.body(),
+                        "\"details\":[\"год должен быть между 1888 и " + validYear + "\"]}", resp.body(),
                 "Должен вернуть {\"error\":\"Ошибка валидации\"," +
-                        "\"details\":[\"год должен быть между 1888 и " +validYear + "\"]}");
+                        "\"details\":[\"год должен быть между 1888 и " + validYear + "\"]}");
     }
 
     @Test
@@ -138,7 +138,6 @@ public class PostMoviesTest {
         assertEquals(415, resp.statusCode(), "Должен вернуть 415");
 
     }
-
 
     private HttpResponse<String> postMovie(String jsonBody) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()

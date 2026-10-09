@@ -25,8 +25,6 @@ public class GetIdMoviesTest {
     private static HttpRequest request;
     private static int id;
 
-
-
     @BeforeAll
     static void beforeAll() throws IOException {
         server = new MoviesServer(moviesStore, 8080);
@@ -75,8 +73,6 @@ public class GetIdMoviesTest {
         assertEquals(400, resp.statusCode(), "должен вернуть 400");
         assertEquals("Некорректный ID", resp.body(), "Ожидалось Некорректный ID");
     }
-
-
 
     private HttpResponse<String> getIdMovies(int id) throws IOException, InterruptedException {
         request = HttpRequest.newBuilder()
