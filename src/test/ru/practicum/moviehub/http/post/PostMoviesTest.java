@@ -67,16 +67,14 @@ public class PostMoviesTest {
 
     @Test
     void postMovie_emptyYear_returns422() throws IOException, InterruptedException {
-        int validYear = LocalDate.now().getYear() + 1;
         String jsonBody = "{\"title\":\"Inception\"}";
 
         HttpResponse<String> resp = postMovie(jsonBody);
 
         assertEquals(422, resp.statusCode(), "Должен вернуть 422");
-        assertEquals("{\"error\":\"Ошибка валидации\"," +
-                        "\"details\":[\"год должен быть между 1888 и " + validYear + "\"]}", resp.body(),
+        assertEquals("{\"error\":\"Ошибка валидации\",\"details\":[\"год не может быть пустым\"]}", resp.body(),
                 "Должен вернуть {\"error\":\"Ошибка валидации\"," +
-                        "\"details\":[\"год должен быть между 1888 и " + validYear + "\"]}");
+                        "{\"error\":\"Ошибка валидации\",\"details\":[\"год не может быть пустым\"]}");
     }
 
     @Test
