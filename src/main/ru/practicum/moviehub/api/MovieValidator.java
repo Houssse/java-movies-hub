@@ -1,8 +1,6 @@
 package ru.practicum.moviehub.api;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 import ru.practicum.moviehub.model.Movie;
 
@@ -55,5 +53,20 @@ public class MovieValidator {
         }
 
         return gson.toJson(errorResponse);
+    }
+
+    public static boolean isJsonObject(String body) {
+        try {
+            JsonElement element = JsonParser.parseString(body);
+
+            if (element == null || element.isJsonNull() || !element.isJsonObject()) {
+                return false;
+            }
+
+            return true;
+
+        } catch (JsonSyntaxException e) {
+            return false;
+        }
     }
 }

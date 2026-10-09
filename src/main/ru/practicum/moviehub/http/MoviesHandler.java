@@ -88,14 +88,18 @@ public class MoviesHandler extends BaseHttpHandler {
     private void post(HttpExchange ex) throws IOException {
         if (MovieValidator.isValidateHandle(ex)) {
             String body = new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            if (MovieValidator.isValidateBody(body)) {
-                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
-                Movie movie = new Gson().fromJson(json, Movie.class);
-                String answer = store.addMovie(movie);
+            if (MovieValidator.isJsonObject(body)) {
+                if (MovieValidator.isValidateBody(body)) {
+                    JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                    Movie movie = new Gson().fromJson(json, Movie.class);
+                    String answer = store.addMovie(movie);
 
-                sendJson(ex, 201, answer);
+                    sendJson(ex, 201, answer);
+                } else {
+                    sendJson(ex, 422, MovieValidator.errorsMessages(body));
+                }
             } else {
-                sendJson(ex, 422, MovieValidator.errorsMessages(body));
+                sendJson(ex, 400, "Тело запроса должно быть JSON-объектом");
             }
         } else {
             sendNoContent(415, ex);

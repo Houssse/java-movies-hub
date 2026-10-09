@@ -137,6 +137,36 @@ public class PostMoviesTest {
 
     }
 
+    @Test
+    void postMovie_invalidJson_returns400() throws IOException, InterruptedException {
+        String jsonBody = "abc";
+
+        HttpResponse<String> resp = postMovie(jsonBody);
+
+        assertEquals(400, resp.statusCode(),
+                "Невалидный JSON должен возвращать 400, а не 500");
+    }
+
+    @Test
+    void postMovie_jsonArrayInsteadOfObject_returns400() throws IOException, InterruptedException {
+        String jsonBody = "[]";
+
+        HttpResponse<String> resp = postMovie(jsonBody);
+
+        assertEquals(400, resp.statusCode(),
+                "JSON-массив вместо объекта должен возвращать 400");
+    }
+
+    @Test
+    void postMovie_emptyBody_returns400() throws IOException, InterruptedException {
+        String jsonBody = "";
+
+        HttpResponse<String> resp = postMovie(jsonBody);
+
+        assertEquals(400, resp.statusCode(),
+                "Пустое тело запроса должно возвращать 400");
+    }
+
     private HttpResponse<String> postMovie(String jsonBody) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
