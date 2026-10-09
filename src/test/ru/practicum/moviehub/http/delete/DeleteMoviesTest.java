@@ -52,14 +52,14 @@ public class DeleteMoviesTest {
 
     @Test
     void deleteMovie_existingId_returns204() throws IOException, InterruptedException {
-        HttpResponse<String> response = DeleteIdMovies(id);
+        HttpResponse<String> response = deleteIdMovies(id);
 
         assertEquals(204, response.statusCode(), "Должен вернуть 204");
     }
 
     @Test
     void deleteMovie_notExistingId_returns404() throws IOException, InterruptedException {
-        HttpResponse<String> response = DeleteIdMovies(id + 1);
+        HttpResponse<String> response = deleteIdMovies(id + 1);
 
         assertEquals(404, response.statusCode(), "Должен вернуть 404");
     }
@@ -77,7 +77,7 @@ public class DeleteMoviesTest {
         assertEquals("Некорректный ID", response.body(), "Ожидалось Некорректный ID");
     }
 
-    private HttpResponse<String> DeleteIdMovies(int id) throws IOException, InterruptedException {
+    private HttpResponse<String> deleteIdMovies(int id) throws IOException, InterruptedException {
         request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies/" + id))
                 .DELETE()
