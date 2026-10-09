@@ -47,7 +47,7 @@ public class GetMoviesYearTest {
         HttpResponse<String> response = gerYear(1924);
 
         assertEquals(200, response.statusCode(), "Должен вернуть 200");
-        assertEquals("", response.body());
+        assertEquals("[{\"id\":1,\"title\":\"movies\",\"year\":1924}]", response.body());
     }
 
     @Test
@@ -55,7 +55,7 @@ public class GetMoviesYearTest {
         HttpResponse<String> response = gerYear(1925);
 
         assertEquals(200, response.statusCode(), "Должен вернуть 200");
-        assertEquals("[]", response.body());
+        assertEquals("[]", response.body(), "Должен вернуть пустой массив");
     }
 
     @Test
@@ -69,7 +69,7 @@ public class GetMoviesYearTest {
         assertEquals(400, resp.statusCode());
         assertEquals("Некорректный параметр запроса — 'year'", resp.body());
     }
-    
+
     private HttpResponse gerYear(int year) throws IOException, InterruptedException {
         request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies?year=" + year))

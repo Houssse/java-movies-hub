@@ -11,7 +11,7 @@ import ru.practicum.moviehub.store.MoviesStore;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.util.*;
 
 public class MoviesHandler extends BaseHttpHandler {
     private final MoviesStore store;
@@ -27,8 +27,17 @@ public class MoviesHandler extends BaseHttpHandler {
                 case "GET":
                     String path = ex.getRequestURI().getPath();
                     String[] parts = path.split("/");
+                    String query = ex.getRequestURI().getQuery();
 
-                    if (parts.length == 2) {
+                    if ((query != null && query.startsWith("year="))) {
+                        String yearStr = query.substring("year=".length());
+                        try {
+                            int year = Integer.parseInt(yearStr);
+                            getMoviesYear(ex, year);
+                        } catch (NumberFormatException e) {
+                            sendJson(ex, 400, "Некорректный параметр запроса — 'year'");
+                        }
+                    } else if (parts.length == 2) {
                         get(ex);
                     } else if (parts.length == 3) {
                         getId(ex, parts);
@@ -43,7 +52,8 @@ public class MoviesHandler extends BaseHttpHandler {
                 default:
                     sendNoContent(204, ex);
             }
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             System.out.println("Ошибка в handle: " + e.getMessage());
             e.printStackTrace();
             sendJson(ex, 500, "{\"error\":\"Внутренняя ошибка\"}");
@@ -67,6 +77,13 @@ public class MoviesHandler extends BaseHttpHandler {
         } catch (NumberFormatException e) {
             sendJson(ex, 400, "Некорректный ID");
         }
+    }
+
+    private void getMoviesYear(HttpExchange ex, int year) throws IOException {
+        List<Movie> movies = store.getMoviesYear(year);
+        String json = new Gson().toJson(movies);
+
+        sendJson(ex, 200, json);
     }
 
     private void post(HttpExchange ex) throws IOException {
